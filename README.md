@@ -90,11 +90,14 @@ ghcr.io/jasonrve/strands-mcp-demo-server
 
 ## GitHub workflows
 
-The repo includes three workflows:
+The repo includes four workflows:
 
 - `ci.yml` — Python tests plus `helm lint` for both charts
 - `container-release.yml` — builds and pushes the server image to GHCR for version tags
 - `helm-release.yml` — packages both charts and uploads them to the GitHub release assets for version tags
+- `deploy-olympus.yml` — deploys both charts into the `kagent` namespace on Olympus, and clears older demo releases first
+
+Olympus deployment expects a base64-encoded kubeconfig secret named `OLYMPUS_KUBECONFIG_B64` in GitHub Actions.
 
 ## Notes
 

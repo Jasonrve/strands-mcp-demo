@@ -4,6 +4,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SERVER_CHART = REPO_ROOT / "server"
 AGENT_CHART = REPO_ROOT / "agent"
+DEPLOY_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "deploy-olympus.yml"
 
 
 def test_component_folders_contain_helm_charts():
@@ -37,3 +38,14 @@ def test_agent_chart_wires_the_mcp_server_tool_names():
     assert "MCPServer" in text
     assert "toolNames" in text
     assert "strands-mcp-demo-mcp" in values
+    assert "namespace: kagent" in values
+
+
+def test_olympus_deploy_workflow_targets_the_kagent_namespace_and_cleans_old_releases():
+    workflow = DEPLOY_WORKFLOW.read_text()
+
+    assert "NAMESPACE: kagent" in workflow
+    assert "helm upgrade --install \"$SERVER_RELEASE\" ./server" in workflow
+    assert "helm upgrade --install \"$AGENT_RELEASE\" ./agent" in workflow
+    assert "helm uninstall \"$release\" -n \"$NAMESPACE\"" in workflow
+    assert "OLYMPUS_KUBECONFIG_B64" in workflow

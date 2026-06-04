@@ -1,0 +1,112 @@
+name: deploy-olympus
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: Image tag to deploy to Olympus
+        required: false
+        default: latest
+      cleanup_old:
+        description: Remove old demo releases before deploying
+        required: false
+        default: true
+        type: boolean
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+env:
+  NAMESPACE: kagent
+  SERVER_RELEASE: strands-mcp-demo-server
+  AGENT_RELEASE: strands-mcp-demo-agent
+  OLD_RELEASES: k8s-agent strands-mcp-demo
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.15.4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: v1.31.0
+
+      - name: Load Olympus kubeconfig
+        shell: bash
+        env:
+          OLYMPUS_KUBECONFIG_B64: ${{ secrets.OLYMPUS_KUBECONFIG_B64 }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${OLYMPUS_KUBECONFIG_B64:-}" ]]; then
+            echo "Missing required secret: OLYMPUS_KUBECONFIG_B64" >&2
+            exit 1
+          fi
+          mkdir -p "$RUNNER_TEMP/kube"
+          printf '%s' "$OLYMPUS_KUBECONFIG_B64" | base64 -d > "$RUNNER_TEMP/kube/config"
+          chmod 600 "$RUNNER_TEMP/kube/config"
+          echo "KUBECONFIG=$RUNNER_TEMP/kube/config" >> "$GITHUB_ENV"
+
+      - name: Resolve image tag
+        id: image
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag="${{ inputs.image_tag }}"
+          if [[ "${GITHUB_EVENT_NAME}" == "push" && "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            tag="${GITHUB_REF_NAME#v}"
+          fi
+          if [[ -z "$tag" ]]; then
+            tag="latest"
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Ensure namespace exists
+        shell: bash
+        run: |
+          set -euo pipefail
+          kubectl create namespace "$NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Remove old demo releases
+        if: ${{ github.event_name == 'push' || inputs.cleanup_old }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for release in $OLD_RELEASES "$SERVER_RELEASE" "$AGENT_RELEASE"; do
+            helm uninstall "$release" -n "$NAMESPACE" >/dev/null 2>&1 || true
+          done
+
+      - name: Deploy server chart
+        shell: bash
+        run: |
+          set -euo pipefail
+          helm upgrade --install "$SERVER_RELEASE" ./server \
+            --namespace "$NAMESPACE" \
+            --create-namespace \
+            --set image.tag="${{ steps.image.outputs.tag }}" \
+            --wait --timeout 5m --atomic
+
+      - name: Deploy agent chart
+        shell: bash
+        run: |
+          set -euo pipefail
+          helm upgrade --install "$AGENT_RELEASE" ./agent \
+            --namespace "$NAMESPACE" \
+            --create-namespace \
+            --wait --timeout 5m --atomic
+
+      - name: Show deployed releases
+        shell: bash
+        run: |
+          set -euo pipefail
+          helm list -n "$NAMESPACE"
