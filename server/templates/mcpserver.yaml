@@ -1,0 +1,28 @@
+apiVersion: kagent.dev/v1alpha1
+kind: MCPServer
+metadata:
+  name: {{ .Values.mcpServer.name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.mcpServer.name }}
+    app.kubernetes.io/part-of: strands-mcp-demo
+    app.kubernetes.io/component: mcp-server
+    kagent.dev/source-repo: strands-mcp-demo
+  annotations:
+    kagent.dev/source-repo: {{ .Values.sourceRepo | quote }}
+    kagent.dev/source-kind: github-repo
+spec:
+  transportType: {{ .Values.mcpServer.transportType }}
+  timeout: {{ .Values.mcpServer.timeout }}
+  httpTransport:
+    targetPort: {{ .Values.mcpServer.port }}
+  deployment:
+    image: {{ printf "%s:%s" .Values.image.repository .Values.image.tag | quote }}
+    imagePullPolicy: {{ .Values.image.pullPolicy }}
+    port: {{ .Values.mcpServer.port }}
+    serviceAccountName: {{ .Values.serviceAccount.name }}
+    cmd: {{ .Values.mcpServer.command | quote }}
+    args:
+{{ toYaml .Values.mcpServer.args | indent 6 }}
+    env:
+{{ toYaml .Values.mcpServer.env | indent 6 }}

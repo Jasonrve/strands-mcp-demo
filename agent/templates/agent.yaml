@@ -1,0 +1,29 @@
+apiVersion: kagent.dev/v1alpha2
+kind: Agent
+metadata:
+  name: {{ .Values.agent.name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.agent.name }}
+    app.kubernetes.io/part-of: strands-mcp-demo
+    app.kubernetes.io/component: agent
+    kagent.dev/source-repo: strands-mcp-demo
+  annotations:
+    kagent.dev/source-repo: {{ .Values.sourceRepo | quote }}
+    kagent.dev/source-kind: github-repo
+    kagent.dev/visible-name: {{ .Values.agent.visibleName | quote }}
+spec:
+  type: Declarative
+  description: {{ .Values.agent.description | quote }}
+  declarative:
+    modelConfig: {{ .Values.agent.modelConfig }}
+    systemMessage: >-
+{{ .Values.agent.systemMessage | indent 6 }}
+    tools:
+      - type: McpServer
+        mcpServer:
+          apiGroup: kagent.dev
+          kind: MCPServer
+          name: {{ .Values.mcpServer.name }}
+          toolNames:
+{{ toYaml .Values.mcpServer.toolNames | indent 12 }}

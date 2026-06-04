@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "strands-mcp-demo-mcp": {
+      "command": "python",
+      "args": ["-m", "strands_mcp_demo.server"],
+      "cwd": "/GIT/strands-mcp-demo",
+      "env": {
+        "PYTHONUNBUFFERED": "1"
+      }
+    }
+  }
+}

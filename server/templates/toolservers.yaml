@@ -1,0 +1,23 @@
+{{- range .Values.toolServers }}
+---
+apiVersion: kagent.dev/v1alpha1
+kind: ToolServer
+metadata:
+  name: {{ .name }}
+  namespace: {{ $.Values.namespace }}
+  labels:
+    app.kubernetes.io/name: strands-mcp-demo
+    app.kubernetes.io/part-of: strands-mcp-demo
+    app.kubernetes.io/component: toolserver
+    kagent.dev/source-repo: strands-mcp-demo
+    kagent.dev/tool-name: {{ .toolName }}
+  annotations:
+    kagent.dev/source-repo: {{ $.Values.sourceRepo | quote }}
+    kagent.dev/source-kind: github-repo
+    kagent.dev/tool-name: {{ .toolName | quote }}
+spec:
+  description: ToolServer record for the {{ .toolName }} MCP capability.
+  config:
+    streamableHttp:
+      url: {{ $.Values.mcpServer.publicUrl }}
+{{- end }}

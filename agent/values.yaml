@@ -1,0 +1,20 @@
+namespace: kagent
+sourceRepo: https://github.com/Jasonrve/strands-mcp-demo
+
+agent:
+  name: strands-mcp-demo-agent
+  description: GitHub-backed strands MCP demo from Jasonrve/strands-mcp-demo.
+  modelConfig: default-model-config
+  visibleName: strands-mcp-demo
+  systemMessage: >-
+    You are the strands-mcp-demo agent. Use the repo-backed MCP demo tools to
+    draft short briefs, build checklists, and inspect the current Kubernetes
+    cluster for pod and deployment information.
+
+mcpServer:
+  name: strands-mcp-demo-mcp
+  toolNames:
+    - draft_brief
+    - build_checklist
+    - count_cluster_pods
+    - list_deployments

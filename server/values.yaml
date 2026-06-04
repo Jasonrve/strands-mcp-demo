@@ -1,0 +1,44 @@
+namespace: kagent
+sourceRepo: https://github.com/Jasonrve/strands-mcp-demo
+
+image:
+  repository: ghcr.io/jasonrve/strands-mcp-demo-server
+  tag: latest
+  pullPolicy: IfNotPresent
+
+serviceAccount:
+  create: true
+  name: strands-mcp-demo-mcp
+  annotations: {}
+
+rbac:
+  create: true
+  clusterRoleName: strands-mcp-demo-mcp
+  serviceAccountName: strands-mcp-demo-mcp
+
+mcpServer:
+  name: strands-mcp-demo-mcp
+  transportType: http
+  timeout: 61s
+  port: 3000
+  publicUrl: http://strands-mcp-demo-mcp.kagent:3000
+  command: python
+  args:
+    - -m
+    - strands_mcp_demo.server
+    - --transport
+    - streamable-http
+  env:
+    PYTHONUNBUFFERED: "1"
+    PIP_DISABLE_PIP_VERSION_CHECK: "1"
+    STRANDS_MCP_DEMO_PUBLIC_URL: http://strands-mcp-demo-mcp.kagent:3000
+
+toolServers:
+  - name: strands-mcp-demo-draft-brief
+    toolName: draft_brief
+  - name: strands-mcp-demo-build-checklist
+    toolName: build_checklist
+  - name: strands-mcp-demo-count-cluster-pods
+    toolName: count_cluster_pods
+  - name: strands-mcp-demo-list-deployments
+    toolName: list_deployments

@@ -1,0 +1,58 @@
+name: container-release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Optional image tag override for a manual run
+        required: false
+        default: latest
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract image tags
+        id: meta
+        shell: bash
+        run: |
+          set -euo pipefail
+          image="ghcr.io/jasonrve/strands-mcp-demo-server"
+          tags=("${image}:sha-${GITHUB_SHA::7}")
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            version="${GITHUB_REF_NAME#v}"
+            tags+=("${image}:${version}" "${image}:latest")
+          else
+            tags+=("${image}:${{ github.event.inputs.tag }}")
+          fi
+          {
+            printf 'image=%s\n' "$image"
+            printf 'tags<<EOF\n'
+            printf '%s\n' "${tags[@]}"
+            printf 'EOF\n'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./server/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}

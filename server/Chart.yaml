@@ -1,0 +1,6 @@
+apiVersion: v2
+name: strands-mcp-demo-server
+description: Helm chart for the strands MCP server and its ToolServer records.
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

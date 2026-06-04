@@ -1,0 +1,45 @@
+name: helm-release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Optional chart version override for a manual run
+        required: false
+        default: 0.1.0
+
+permissions:
+  contents: write
+
+jobs:
+  package-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.15.4
+
+      - name: Package charts
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="${GITHUB_REF_NAME#v}"
+          if [[ "${GITHUB_REF_TYPE}" != "tag" ]]; then
+            version="${{ github.event.inputs.version }}"
+          fi
+          mkdir -p dist
+          helm package server --destination dist --version "$version" --app-version "$version"
+          helm package agent --destination dist --version "$version" --app-version "$version"
+          ls -l dist
+
+      - name: Publish GitHub release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.tgz

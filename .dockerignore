@@ -1,0 +1,11 @@
+.git
+.pytest_cache
+__pycache__
+*.pyc
+build
+dist
+agent
+.github
+server/Chart.yaml
+server/values.yaml
+server/templates
