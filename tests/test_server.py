@@ -1,4 +1,4 @@
-from strands_mcp_demo.server import TOOL_DESCRIPTIONS, TOOL_NAMES, build_agent_card, build_server, describe_server, resolve_public_base_url
+from strands_mcp_demo.server import TOOL_DESCRIPTIONS, TOOL_NAMES, build_server_card, build_server, describe_server, resolve_public_base_url
 
 
 def test_server_description_lists_tools():
@@ -6,8 +6,8 @@ def test_server_description_lists_tools():
     assert TOOL_NAMES == ("draft_brief", "build_checklist", "count_cluster_pods", "list_deployments")
 
 
-def test_agent_card_exposes_tools_and_http_preference():
-    card = build_agent_card("https://example.invalid")
+def test_server_card_exposes_tools_and_http_preference():
+    card = build_server_card("https://example.invalid")
     assert card["name"] == "strands-mcp-demo-mcp"
     assert card["url"] == "https://example.invalid"
     assert card["preferredTransport"] == "http"

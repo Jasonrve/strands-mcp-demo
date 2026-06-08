@@ -1,4 +1,4 @@
-"""Demo helpers shared by the CLI, agent, and MCP server.
+"""Demo helpers shared by the CLI and MCP server.
 
 The text-generation helpers are deterministic so the repository can be tested
 without an external model. The cluster-introspection helpers talk to the active

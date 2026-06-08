@@ -1,8 +1,7 @@
 """MCP server for the demo.
 
-The server exposes the same deterministic helpers that power the CLI and the
-strands Agent. That makes the MCP surface easy to consume from kagent or any
-other MCP client.
+The server exposes the same deterministic helpers that power the CLI.
+That makes the MCP surface easy to consume from kagent or any other MCP client.
 """
 
 from __future__ import annotations
@@ -29,8 +28,8 @@ TOOL_DESCRIPTIONS = {
 }
 
 
-def build_agent_card(base_url: str) -> dict:
-    """Return a small agent card that kagent can fetch over HTTP."""
+def build_server_card(base_url: str) -> dict:
+    """Return a small MCP server card that kagent can fetch over HTTP."""
 
     return {
         "protocolVersion": "0.3.0",
@@ -141,7 +140,7 @@ def build_server() -> FastMCP:
     @server.custom_route("/", methods=["GET"])
     async def root_route(request: Request) -> JSONResponse:
         base_url = resolve_public_base_url(request)
-        return JSONResponse(build_agent_card(base_url))
+        return JSONResponse(build_server_card(base_url))
 
     @server.custom_route("/health", methods=["GET"])
     async def health_route(request: Request) -> PlainTextResponse:
@@ -150,17 +149,17 @@ def build_server() -> FastMCP:
     @server.custom_route("/.well-known/agent-card.json", methods=["GET"])
     async def agent_card_route(request: Request) -> JSONResponse:
         base_url = resolve_public_base_url(request)
-        return JSONResponse(build_agent_card(base_url))
+        return JSONResponse(build_server_card(base_url))
 
     @server.custom_route("/agent-card.json", methods=["GET"])
     async def legacy_agent_card_route(request: Request) -> JSONResponse:
         base_url = resolve_public_base_url(request)
-        return JSONResponse(build_agent_card(base_url))
+        return JSONResponse(build_server_card(base_url))
 
     @server.custom_route("/agent.json", methods=["GET"])
     async def agent_json_route(request: Request) -> JSONResponse:
         base_url = resolve_public_base_url(request)
-        return JSONResponse(build_agent_card(base_url))
+        return JSONResponse(build_server_card(base_url))
 
     return server
 

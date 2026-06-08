@@ -9,7 +9,6 @@ description = "Minimal strands-based MCP demo server and kagent load example"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-  "strands-agents>=1.42,<2",
   "mcp>=1.26,<2",
   "kubernetes>=31,<33",
 ]
